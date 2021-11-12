@@ -1,4 +1,4 @@
-const URLofServer = "https://crudcrud.com/api/7f4149e1c4294cd7b0098ba35e0d8771/people"; 
+const URLofServer = "https://crudcrud.com/api/46b4339d5cd047c8ac837e78b0e7a8e1/people"; 
 
 let tempServer = [];
 
@@ -50,6 +50,10 @@ class DOMManager {
                 let id = e.target.id.split('-')[2];
                 DOMManager.deletePerson(id);
             });
+            itemdiv.find(`#addSub-btn-${id1}`).on('click', (e) => {
+                let id = e.target.id.split('-')[2];
+                DOMManager.addPet(id);
+            });
             itemList.append(itemdiv);
             let sublist = $(`#subList-${id1}`);
             for (let int = 0; int < e.subitems.length; int++) {
@@ -68,7 +72,6 @@ class DOMManager {
                 subdiv.find(`#sub-Del-btn-${id1}-${int}`).on('click', (e) => {
                     let id = e.target.id.split('-')[3];
                     let num = e.target.id.split('-')[4];
-                    let item = 
                     DOMManager.deletePet(id,num);
                 });
                 sublist.append(subdiv);
@@ -96,11 +99,30 @@ class DOMManager {
 
     static addPerson(){
         let name = $('#item-Name').val();
-        //Need to add test to make sure name is not blank
         if (name != '') {
             $('#item-Name').val('')
             AjaxManager.postItem(new Item(name),URLofServer).then( () => this.pullItems());
         }
+    }
+
+    static addPet(id){
+        let name = $(`#subItem-Name-${id}`).val();
+        let info = $(`#subItem-Info-${id}`).val();
+        if (name != '' && info != '') {
+            let url = `${URLofServer}/${id}`;
+            let item = DOMManager.currentArray;
+            let csub;
+            for (const sub of item) {
+                if (sub._id == id) {
+                    sub.subitems.push(new SubItem(name,info));
+                    delete sub._id;
+                    csub = sub;
+                }
+            }
+            $(`#subItem-Name-${id}`).val('');
+            $(`#subItem-Info-${id}`).val('');
+            AjaxManager.putItem(csub,url).then( () => this.pullItems());
+        };
     }
 
     static deletePerson(id){
@@ -111,6 +133,7 @@ class DOMManager {
     static deletePet(id,num){
         let url = `${URLofServer}/${id}`;
         let item = DOMManager.currentArray;
+        let csub;
         console.log(item);
         for (const sub of item) {
             if (sub._id == id) {
@@ -118,10 +141,13 @@ class DOMManager {
                 sub.subitems.splice(num,1);
                 console.log(sub);
                 delete sub._id;
-                AjaxManager.putItem(sub,url).then( () => this.pullItems()); //Not Working
+                csub = sub;
             }
         }
-        
+        AjaxManager.putItem(csub,url).then( (e) => {
+            console.log(e);
+            console.log(this.pullItems());
+        });
         
     }
 }
@@ -151,7 +177,7 @@ class AjaxManager {
         return $.ajax({
             url: location,
             type: 'PUT',
-            dataType: 'json',
+            //dataType: 'json',
             data: JSON.stringify(item),
             contentType: 'application/json'
         });
