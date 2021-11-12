@@ -58,17 +58,22 @@ class DOMManager {
             let sublist = $(`#subList-${id1}`);
             for (let int = 0; int < e.subitems.length; int++) {
                 const el = e.subitems[int];
-                //Fix Int and Inti
                 let subdiv = $(`<div id="subitem-${id1}-${int}" class="my-3">
                 <span class="fw-bold">Name: </span> <span>${el.name}</span>
                 <span class="fw-bold">Animal: </span> <span>${el.info}</span>
                 <button class="btn btn-danger btn-sm" id="sub-Del-btn-${id1}-${int}">Remove Pet</button>
                 <div class="container" id="subSubList-${id1}-${int}">
                 <input type="date" name="subSubItemDate${id1}-${int}" id="subSubItem-Date-${id1}-${int}">
+                <input type="time" name="subSubItemTime${id1}-${int}" id="subSubItem-Time-${id1}-${int}">
                         <input type="text" name="subSubItemNotes${id1}-${int}" id="subSubItem-Notes-${id1}-${int}" placeholder="Notes...">
                         <button class="btn btn-success btn-sm" id="addSubSub-btn-${id1}-${int}">Create Appointment</button>
                     </div>
                 </div>`);
+                subdiv.find(`#addSubSub-btn-${id1}-${int}`).on('click', (e) => {
+                    let id = e.target.id.split('-')[2];
+                    let num = e.target.id.split('-')[3];
+                    DOMManager.addAppoint(id,num);
+                });
                 subdiv.find(`#sub-Del-btn-${id1}-${int}`).on('click', (e) => {
                     let id = e.target.id.split('-')[3];
                     let num = e.target.id.split('-')[4];
@@ -121,6 +126,28 @@ class DOMManager {
             }
             $(`#subItem-Name-${id}`).val('');
             $(`#subItem-Info-${id}`).val('');
+            AjaxManager.putItem(csub,url).then( () => this.pullItems());
+        };
+    }
+
+    static addAppoint(id,num){
+        let date = $(`#subSubItem-Date-${id}-${num}`).val();
+        let note = $(`#subSubItem-Notes-${id}-${num}`).val();
+        let time = $(`#subSubItem-Time-${id}-${num}`).val();
+        if (date != '' && note != '' && time != '') {
+            let url = `${URLofServer}/${id}`;
+            let item = DOMManager.currentArray;
+            let csub;
+            for (const sub of item) {
+                if (sub._id == id) {
+                    sub.subitems[num].apponts.push(new Appointment(`${time} ${date}`,note));
+                    delete sub._id;
+                    csub = sub;
+                }
+            }
+            $(`#subSubItem-Date-${id}-${num}`).val('');
+            $(`#subSubItem-Notes-${id}-${num}`).val('');
+            $(`#subSubItem-Time-${id}-${num}`).val('');
             AjaxManager.putItem(csub,url).then( () => this.pullItems());
         };
     }
