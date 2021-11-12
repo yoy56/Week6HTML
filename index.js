@@ -1,4 +1,4 @@
-const URLofServer = "https://crudcrud.com/api/76033e82691b4830adcb47537793ec7f/people"; //CRUD not working anymore
+const URLofServer = "https://crudcrud.com/api/7f4149e1c4294cd7b0098ba35e0d8771/people"; 
 
 let tempServer = [];
 
