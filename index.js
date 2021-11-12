@@ -1,4 +1,4 @@
-const URLofServer = "https://crudcrud.com/api/76033e82691b4830adcb47537793ec7f/people";
+const URLofServer = "https://crudcrud.com/api/76033e82691b4830adcb47537793ec7f/people"; //CRUD not working anymore
 
 let tempServer = [];
 
@@ -25,8 +25,12 @@ class Appointment {
 }
 
 class DOMManager {
+    constructor(){
+        this.currentArray;
+    }
 
     static renderDOM(itemgot){
+        this.currentArray = itemgot;
         let items = itemgot;
         let itemList = $('#item-List');
         itemList.empty();
@@ -61,6 +65,12 @@ class DOMManager {
                         <button class="btn btn-success btn-sm" id="addSubSub-btn-${id1}-${int}">Create Appointment</button>
                     </div>
                 </div>`);
+                subdiv.find(`#sub-Del-btn-${id1}-${int}`).on('click', (e) => {
+                    let id = e.target.id.split('-')[3];
+                    let num = e.target.id.split('-')[4];
+                    let item = 
+                    DOMManager.deletePet(id,num);
+                });
                 sublist.append(subdiv);
                 let subsublist = $(`#subSubList-${id1}-${int}`);
                 for (let inti = 0; inti < el.apponts.length; inti++) {
@@ -87,13 +97,32 @@ class DOMManager {
     static addPerson(){
         let name = $('#item-Name').val();
         //Need to add test to make sure name is not blank
-        console.log(name);
-        AjaxManager.postItem(new Item(name),URLofServer).then( () => this.pullItems());
+        if (name != '') {
+            $('#item-Name').val('')
+            AjaxManager.postItem(new Item(name),URLofServer).then( () => this.pullItems());
+        }
     }
 
     static deletePerson(id){
         let url = `${URLofServer}/${id}`
         AjaxManager.delItem(url).then( () => this.pullItems());
+    }
+
+    static deletePet(id,num){
+        let url = `${URLofServer}/${id}`;
+        let item = DOMManager.currentArray;
+        console.log(item);
+        for (const sub of item) {
+            if (sub._id == id) {
+                console.log(sub);
+                sub.subitems.splice(num,1);
+                console.log(sub);
+                delete sub._id;
+                AjaxManager.putItem(sub,url).then( () => this.pullItems()); //Not Working
+            }
+        }
+        
+        
     }
 }
 
@@ -122,7 +151,7 @@ class AjaxManager {
         return $.ajax({
             url: location,
             type: 'PUT',
-            
+            dataType: 'json',
             data: JSON.stringify(item),
             contentType: 'application/json'
         });
