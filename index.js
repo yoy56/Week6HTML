@@ -92,6 +92,12 @@ class DOMManager {
                     </div>
                     <button class="btn btn-warning btn-sm" id="subSub-Del-btn-${id1}-${int}-${inti}">Cancel Appointment</button>
                     </div>`);
+                    subsubdiv.find(`#subSub-Del-btn-${id1}-${int}-${inti}`).on('click', (e) => {
+                        let id = e.target.id.split('-')[3];
+                        let num = e.target.id.split('-')[4];
+                        let idnum = e.target.id.split('-')[5];
+                        DOMManager.deleteAppoint(id,num,idnum);
+                    });
                     subsublist.append(subsubdiv);
                 }
             }
@@ -161,34 +167,39 @@ class DOMManager {
         let url = `${URLofServer}/${id}`;
         let item = DOMManager.currentArray;
         let csub;
-        console.log(item);
         for (const sub of item) {
             if (sub._id == id) {
-                console.log(sub);
                 sub.subitems.splice(num,1);
-                console.log(sub);
                 delete sub._id;
                 csub = sub;
             }
         }
-        AjaxManager.putItem(csub,url).then( (e) => {
-            console.log(e);
-            console.log(this.pullItems());
-        });
+        AjaxManager.putItem(csub,url).then( () => this.pullItems());
         
+    }
+
+    static deleteAppoint(id,num,idnum){
+        let url = `${URLofServer}/${id}`;
+        let item = DOMManager.currentArray;
+        let csub;
+        for (const sub of item) {
+            if (sub._id == id) {
+                sub.subitems[num].apponts.splice(idnum,1);
+                delete sub._id;
+                csub = sub;
+            }
+        }
+        AjaxManager.putItem(csub,url).then( () => this.pullItems());
     }
 }
 
 class AjaxManager {
 
     static pullItems() {
-        //Pull from server 
-        console.log($.get(URLofServer));
         return $.get(URLofServer);
     }
 
     static postItem(item,location) {
-        //Post to server
         return $.ajax({
             url: location,
             type: 'POST',
@@ -220,16 +231,15 @@ class AjaxManager {
 
 
 function makeInitial(){
-    //Make Inital Items
-    //console.log(items);
-    //Post Items
-
-    let app1 = new Appointment("1:57pm 11/11/2021","Test Note");
+    let app1 = new Appointment("12:30 2021-11-13","Test Note");
     let pt1 = new SubItem("Teo","Bird");
     let ownr1 = new Item("Harry");
     pt1.apponts.push(app1);
     ownr1.subitems.push(pt1);
-    AjaxManager.postItem(ownr1,URLofServer).then( (resp) => console.log(resp));
+    AjaxManager.postItem(ownr1,URLofServer).then( (resp) => {
+        console.log(resp);
+        DOMManager.pullItems();
+    });
 };
 
 
