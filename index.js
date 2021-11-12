@@ -32,41 +32,47 @@ class DOMManager {
         itemList.empty();
         for (let i = 0; i < items.length; i++) {
             const e = items[i];
-            let itemdiv = $(` <div id="item-${i}">
+            let id1 = e._id;
+            let itemdiv = $(` <div id="item-${id1}">
             <h3>${e.name}'s Pets</h3>
-            <button class="btn btn-danger btn-sm" id="Del-btn-${i}">Remove Customer</button> <br>
-            <input type="text" name="subItemName${i}" id="subItem-Name-${i}" placeholder="Pet's Name"> 
-            <input type="text" name="subItemInfo${i}" id="subItem-Info-${i}" placeholder="Pet's Species"> <br>
-            <button id="addSub-btn-${i}" class="btn btn-primary my-2 w-100">Add Pet</button>
-            <div id="subList-${i}" class="bg-light bg-gradient">
+            <button class="btn btn-danger btn-sm" id="Del-btn-${id1}">Remove Customer</button> <br>
+            <input type="text" name="subItemName${id1}" id="subItem-Name-${id1}" placeholder="Pet's Name"> 
+            <input type="text" name="subItemInfo${id1}" id="subItem-Info-${id1}" placeholder="Pet's Species"> <br>
+            <button id="addSub-btn-${id1}" class="btn btn-primary my-2 w-100">Add Pet</button>
+            <div id="subList-${id1}" class="bg-light bg-gradient">
             </div>
             </div>`);
+            itemdiv.find(`#Del-btn-${id1}`).on('click', (e) => {
+                let id = e.target.id.split('-')[2];
+                DOMManager.deletePerson(id);
+            });
             itemList.append(itemdiv);
-            let sublist = $(`#subList-${i}`);
+            let sublist = $(`#subList-${id1}`);
             for (let int = 0; int < e.subitems.length; int++) {
                 const el = e.subitems[int];
-                let subdiv = $(`<div id="subitem-${i}-${int}" class="my-3">
+                //Fix Int and Inti
+                let subdiv = $(`<div id="subitem-${id1}-${int}" class="my-3">
                 <span class="fw-bold">Name: </span> <span>${el.name}</span>
                 <span class="fw-bold">Animal: </span> <span>${el.info}</span>
-                <button class="btn btn-danger btn-sm" id="sub-Del-btn-${i}-${int}">Remove Pet</button>
-                <div class="container" id="subSubList-${i}-${int}">
-                <input type="date" name="subSubItemDate${i}-${int}" id="subSubItem-Date-${i}-${int}">
-                        <input type="text" name="subSubItemNotes${i}-${int}" id="subSubItem-Notes-${i}-${int}" placeholder="Notes...">
-                        <button class="btn btn-success btn-sm" id="addSubSub-btn-${i}-${int}">Create Appointment</button>
+                <button class="btn btn-danger btn-sm" id="sub-Del-btn-${id1}-${int}">Remove Pet</button>
+                <div class="container" id="subSubList-${id1}-${int}">
+                <input type="date" name="subSubItemDate${id1}-${int}" id="subSubItem-Date-${id1}-${int}">
+                        <input type="text" name="subSubItemNotes${id1}-${int}" id="subSubItem-Notes-${id1}-${int}" placeholder="Notes...">
+                        <button class="btn btn-success btn-sm" id="addSubSub-btn-${id1}-${int}">Create Appointment</button>
                     </div>
                 </div>`);
                 sublist.append(subdiv);
-                let subsublist = $(`#subSubList-${i}-${int}`);
+                let subsublist = $(`#subSubList-${id1}-${int}`);
                 for (let inti = 0; inti < el.apponts.length; inti++) {
                     const ele = el.apponts[inti];
-                    let subsubdiv = $(`<div id="subSubItem-${i}-${int}-${inti}">
+                    let subsubdiv = $(`<div id="subSubItem-${id1}-${int}-${inti}">
                     <span class="fw-bold">Appointment:</span>
                     <span>${ele.date}</span>
                     <div class="fw-bold">Notes:</div>
                     <div class="container bg-white border border-secondary">
                         <p>${ele.note}</p>
                     </div>
-                    <button class="btn btn-warning btn-sm" id="subSub-Del-btn-${i}-${int}-${inti}">Cancel Appointment</button>
+                    <button class="btn btn-warning btn-sm" id="subSub-Del-btn-${id1}-${int}-${inti}">Cancel Appointment</button>
                     </div>`);
                     subsublist.append(subsubdiv);
                 }
@@ -82,7 +88,12 @@ class DOMManager {
         let name = $('#item-Name').val();
         //Need to add test to make sure name is not blank
         console.log(name);
-        AjaxManager.postItem(new Item(name),URLofServer).then( (item) => this.renderDOM(item));
+        AjaxManager.postItem(new Item(name),URLofServer).then( () => this.pullItems());
+    }
+
+    static deletePerson(id){
+        let url = `${URLofServer}/${id}`
+        AjaxManager.delItem(url).then( () => this.pullItems());
     }
 }
 
@@ -114,6 +125,13 @@ class AjaxManager {
             
             data: JSON.stringify(item),
             contentType: 'application/json'
+        });
+    }
+
+    static delItem(location){
+        return $.ajax({
+            url: location,
+            type: 'DELETE'
         });
     }
 }
